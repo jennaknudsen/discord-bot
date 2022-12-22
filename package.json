@@ -1,0 +1,25 @@
+{
+  "name": "discord-bot",
+  "version": "1.0.0",
+  "description": "This is a Discord bot that will let users speak to OpenAI.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "app": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jennaknudsen/discord-bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jennaknudsen/discord-bot/issues"
+  },
+  "homepage": "https://github.com/jennaknudsen/discord-bot#readme",
+  "dependencies": {
+    "axios": "^1.2.1",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3"
+  }
+}
