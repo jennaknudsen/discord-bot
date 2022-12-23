@@ -1,8 +1,8 @@
-require('dotenv').config(); //initialize dotenv
+require('dotenv').config();
 const db = require('./db');
 const ai = require('./ai');
 const { Events, GatewayIntentBits } = require('discord.js');
-const Discord = require('discord.js'); //import discord.js
+const Discord = require('discord.js'); 
 
 // Get the keys
 const {
@@ -14,7 +14,6 @@ const {
     CONTENT_EMOJI
 } = process.env;
 
-// Create a new Discord client here and connect to it
 const client = new Discord.Client({
     intents: [
         GatewayIntentBits.GuildMessages, 
@@ -31,9 +30,7 @@ client.on('ready', () => {
 
 // respond to all messages here
 client.on('messageCreate', async msg => {
-    // wrap in try-catch just in case
     try {
-        // don't respond to bot messages
         if (msg.author.bot) {
             return;
         }
@@ -68,7 +65,6 @@ client.on('messageCreate', async msg => {
 });
 
 client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
-    // wrap in try-catch just in case
     try {
         // content moderation on :ParentalAdvisory: emote
         if (reaction_orig['_emoji'].name === CONTENT_EMOJI) {
@@ -88,5 +84,4 @@ client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
     }
 });
 
-// log in to discord using Discord token
-client.login(DISCORD_TOKEN); //login bot using token
+client.login(DISCORD_TOKEN);
