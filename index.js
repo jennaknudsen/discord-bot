@@ -5,12 +5,14 @@ const { Events, GatewayIntentBits } = require('discord.js');
 const Discord = require('discord.js'); //import discord.js
 
 // Get the keys
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const AI_MODEL = process.env.AI_MODEL;
-const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-const AI_COMMAND_NAME = process.env.AI_COMMAND_NAME;
-const AI_CHANNEL = process.env.AI_CHANNEL;
-const CONTENT_EMOJI = process.env.CONTENT_EMOJI;
+const {
+    OPENAI_API_KEY, 
+    AI_MODEL, 
+    DISCORD_TOKEN, 
+    AI_COMMAND_NAME, 
+    AI_CHANNEL, 
+    CONTENT_EMOJI
+} = process.env;
 
 // Create a new Discord client here and connect to it
 const client = new Discord.Client({
