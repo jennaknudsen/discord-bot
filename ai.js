@@ -46,6 +46,7 @@ async function checkModeration(prompt, token) {
             returnStr = "No objectionable content found here."
         } else {
             returnStr = "Objectionable content found: "
+            // Get list of objectionable categories
             for (var category in returnData.categories) {
                 if (returnData.categories[category]) {
                     returnStr += category + ", ";
