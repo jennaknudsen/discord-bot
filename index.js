@@ -1,7 +1,7 @@
 require('dotenv').config(); //initialize dotenv
 const db = require('./db');
 const ai = require('./ai');
-const { GatewayIntentBits } = require('discord.js');
+const { Events, GatewayIntentBits } = require('discord.js');
 const Discord = require('discord.js'); //import discord.js
 
 // Create a new Discord client here and connect to it
@@ -9,8 +9,10 @@ const client = new Discord.Client({
     intents: [
         GatewayIntentBits.GuildMessages, 
         GatewayIntentBits.MessageContent, 
+        GatewayIntentBits.GuildMessageReactions,
         GatewayIntentBits.Guilds
-    ]
+    ],
+    partials: ['MESSAGE', 'CHANNEL', 'REACTION']
 });
 
 client.on('ready', () => {
@@ -29,7 +31,7 @@ client.on('messageCreate', async msg => {
 
     let channel = msg.channel;
     let message = msg.content;
-    if (message.startsWith('%ai')) {
+    if (message.startsWith('%ai ')) {
         // Checking to see if the user is spamming
         let apiCallsLeft = db.getApiCallsLeft(msg.author.id);
         console.log(`User has ${apiCallsLeft} API calls remaining.`)
@@ -41,9 +43,29 @@ client.on('messageCreate', async msg => {
         let prompt = message.substring(4);
         let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
 
-        channel.send(responseMessage);
+        try {
+            msg.reply(responseMessage);
+        } catch (e) {
+            msg.reply("Sorry, an internal error has occurred. Try again later.");
+        }
 
     } 
+});
+
+client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
+    let prompt = reaction_orig.message.content;
+    if (reaction_orig['_emoji'].name === "ParentalAdvisory") {
+        console.log("Checking the message '" + prompt + "'");
+    }
+
+    let responseMessage = await ai.checkModeration(prompt, OPENAI_API_KEY);
+
+    try {
+        reaction_orig.message.reply(responseMessage);
+    } catch (e) {
+        reaction_orig.message.reply("Sorry, an internal error has occurred. Try again later.");
+    }
+    
 });
 
 // log in to discord using Discord token
