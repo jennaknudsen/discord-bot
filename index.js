@@ -8,6 +8,9 @@ const Discord = require('discord.js'); //import discord.js
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const AI_MODEL = process.env.AI_MODEL;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
+const AI_COMMAND_NAME = process.env.AI_COMMAND_NAME;
+const AI_CHANNEL = process.env.AI_CHANNEL;
+const CONTENT_EMOJI = process.env.CONTENT_EMOJI;
 
 // Create a new Discord client here and connect to it
 const client = new Discord.Client({
@@ -26,47 +29,59 @@ client.on('ready', () => {
 
 // respond to all messages here
 client.on('messageCreate', async msg => {
-    // don't respond to bot messages
-    if (msg.author.bot) {
-        return;
-    }
-
-    let message = msg.content;
-    if (message.startsWith('%ai ')) {
-        // Checking to see if the user is spamming
-        let apiCallsLeft = db.getApiCallsLeft(msg.author.id);
-        console.log(`User has ${apiCallsLeft} API calls remaining.`)
-        if (apiCallsLeft <= 0) {
+    // wrap in try-catch just in case
+    try {
+        // don't respond to bot messages
+        if (msg.author.bot) {
             return;
         }
 
-        // Call the openAI API and get its output
-        let prompt = message.substring(4);
-        let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
-
-        // wrap in try-catch just in case
-        try {
-            msg.reply(responseMessage);
-        } catch (e) {
-            msg.reply("Sorry, an internal error has occurred. Try again later.");
+        // don't respond to messages outside of designated spam channel
+        if (msg.channel.name !== AI_CHANNEL) {
+            return;
         }
 
-    } 
+        let message = msg.content;
+        if (message.startsWith(AI_COMMAND_NAME + ' ')) {
+            // Checking to see if the user is spamming
+            let apiCallsLeft = db.getApiCallsLeft(msg.author.id);
+            console.log(`User has ${apiCallsLeft} API calls remaining.`)
+            if (apiCallsLeft <= 0) {
+                return;
+            }
+
+            // Call the openAI API and get its output
+            let prompt = message.substring(4);
+            let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
+
+            msg.reply(responseMessage);
+        } 
+    } catch (e) {
+        try {
+            reaction_orig.message.reply("Sorry, an internal error has occurred. Try again later.");
+        } catch (x) {
+            console.log('An error has occurred, and I can\'t send messages.');
+        }
+    }     
 });
 
 client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
-    // content moderation on :ParentalAdvisory: emote
-    if (reaction_orig['_emoji'].name === "ParentalAdvisory") {
-        let prompt = reaction_orig.message.content;
-        console.log("Checking the message '" + prompt + "'");
+    // wrap in try-catch just in case
+    try {
+        // content moderation on :ParentalAdvisory: emote
+        if (reaction_orig['_emoji'].name === CONTENT_EMOJI) {
+            let prompt = reaction_orig.message.content;
+            console.log("Checking the message '" + prompt + "'");
 
-        let responseMessage = await ai.checkModeration(prompt, OPENAI_API_KEY);
+            let responseMessage = await ai.checkModeration(prompt, OPENAI_API_KEY);
 
-        // wrap in try-catch just in case
-        try {
             reaction_orig.message.reply(responseMessage);
-        } catch (e) {
+        }
+    } catch (e) {
+        try {
             reaction_orig.message.reply("Sorry, an internal error has occurred. Try again later.");
+        } catch (x) {
+            console.log('An error has occurred, and I can\'t send messages.');
         }
     }
 });
