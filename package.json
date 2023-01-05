@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "app": "nodemon index.js"
+    "app": "nodemon -x 'node index.js || touch index.js'"
   },
   "repository": {
     "type": "git",
