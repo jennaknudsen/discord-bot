@@ -13,7 +13,7 @@ async function callOpenApi(prompt, model, token) {
         headers: {
             Authorization: "Bearer " + token
         },
-        timeout: 10000
+        timeout: 20000
     }).then(res => {
         returnStr = res.data.choices[0].text.trim().substring(0, 2000);
         console.log('==========')
@@ -39,7 +39,7 @@ async function checkModeration(prompt, token) {
         headers: {
             Authorization: "Bearer " + token
         },
-        timeout: 10000
+        timeout: 20000
     }).then(res => {
         let returnData = res.data.results[0];
         if (returnData.flagged == false) {

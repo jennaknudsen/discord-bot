@@ -19,6 +19,17 @@ let escapeDiscordMessage = function(input) {
         .replaceAll('>', '\\>');
 }
 
+// use this function to clean + reply to a message.
+// can choose whether to ping a user or not
+let replyToMessage = function(msg, content, ping=true) {
+    msg.reply({ content: escapeDiscordMessage(content), allowedMentions: { repliedUser: ping }} )
+        .catch(e => {
+            console.log("Unable to send message.");
+            console.log(e);
+            replyToMessage(msg, "Sorry, an internal error occurred. Try again later.", ping=ping);
+        });
+}
+
 // Create a new Discord client here and connect to it
 const client = new Discord.Client({
     intents: [
@@ -33,21 +44,28 @@ const client = new Discord.Client({
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}, id ${client.user.id}!`);
 
-
     // send "Bot restarted" message in each AI-spam channel
     let guilds = client.guilds.cache;
+    console.log("Bot is active in the following servers:")
+    console.log(guilds.map(guild => guild.name));
     guilds.forEach(guild => {
-        let channels = guild.channels.cache.map(channel => ({
-            name: channel.name,
-            id: channel.id
-        }));
-        let aiChannels = channels.filter(channel => channel.name === AI_CHANNEL);
-        aiChannels.forEach(aiChannel => {
-            console.log(client.channels);
-            client.channels.cache.get(aiChannel.id).send(
-                escapeDiscordMessage("OpenAI bot has been restarted.")
-            );
-        });
+        try {
+            let channels = guild.channels.cache.map(channel => ({
+                name: channel.name,
+                id: channel.id
+            }));
+            let aiChannels = channels.filter(channel => channel.name === AI_CHANNEL);
+            aiChannels.forEach(aiChannel => {
+                client.channels.cache.get(aiChannel.id).send(
+                    escapeDiscordMessage("OpenAI bot has been restarted.")
+                ).catch(e => {
+                    console.log('An error has occurred: ')
+                    console.log(e)
+                });
+            });
+        } catch (e) {
+            console.log('An error has occurred, and I can\'t send a wakeup message in ' + guild.name);
+        };
     });
 });
 
@@ -77,12 +95,11 @@ client.on('messageCreate', async msg => {
             // Call the openAI API and get its output
             let prompt = message.substring(4);
             let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
-
-            msg.reply(escapeDiscordMessage(responseMessage));
+            replyToMessage(msg, responseMessage)
         } 
     } catch (e) {
         try {
-            reaction_orig.message.reply(escapeDiscordMessage("Sorry, an internal error has occurred. Try again later."));
+            replyToMessage(msg, "Sorry, an internal error occurred. Try again later.")
         } catch (x) {
             console.log('An error has occurred, and I can\'t send messages.');
         }
@@ -99,15 +116,12 @@ client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
 
             let responseMessage = await ai.checkModeration(prompt, OPENAI_API_KEY);
 
-            reaction_orig.message.reply(escapeDiscordMessage(responseMessage));
+            replyToMessage(reaction_orig.message, responseMessage, ping=false)
         }
     } catch (e) {
-        try {
-            reaction_orig.message.reply(escapeDiscordMessage("Sorry, an internal error has occurred. Try again later."));
-        } catch (x) {
-            console.log('An error has occurred, and I can\'t send messages.');
-        }
+        replyToMessage(reaction_orig.message, "Sorry, an internal error has occurred. Try again later.");
     }
 });
+
 // log in to discord using Discord token
 client.login(DISCORD_TOKEN); //login bot using token
