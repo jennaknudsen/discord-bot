@@ -12,6 +12,13 @@ const AI_COMMAND_NAME = process.env.AI_COMMAND_NAME;
 const AI_CHANNEL = process.env.AI_CHANNEL;
 const CONTENT_EMOJI = process.env.CONTENT_EMOJI;
 
+let escapeDiscordMessage = function(input) {
+    return input.replaceAll('*', '\\*')
+        .replaceAll('_', '\\_')
+        .replaceAll('`', '\\`')
+        .replaceAll('>', '\\>');
+}
+
 // Create a new Discord client here and connect to it
 const client = new Discord.Client({
     intents: [
@@ -25,6 +32,23 @@ const client = new Discord.Client({
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}, id ${client.user.id}!`);
+
+
+    // send "Bot restarted" message in each AI-spam channel
+    let guilds = client.guilds.cache;
+    guilds.forEach(guild => {
+        let channels = guild.channels.cache.map(channel => ({
+            name: channel.name,
+            id: channel.id
+        }));
+        let aiChannels = channels.filter(channel => channel.name === AI_CHANNEL);
+        aiChannels.forEach(aiChannel => {
+            console.log(client.channels);
+            client.channels.cache.get(aiChannel.id).send(
+                escapeDiscordMessage("OpenAI bot has been restarted.")
+            );
+        });
+    });
 });
 
 // respond to all messages here
@@ -54,11 +78,11 @@ client.on('messageCreate', async msg => {
             let prompt = message.substring(4);
             let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
 
-            msg.reply(responseMessage);
+            msg.reply(escapeDiscordMessage(responseMessage));
         } 
     } catch (e) {
         try {
-            reaction_orig.message.reply("Sorry, an internal error has occurred. Try again later.");
+            reaction_orig.message.reply(escapeDiscordMessage("Sorry, an internal error has occurred. Try again later."));
         } catch (x) {
             console.log('An error has occurred, and I can\'t send messages.');
         }
@@ -75,16 +99,15 @@ client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
 
             let responseMessage = await ai.checkModeration(prompt, OPENAI_API_KEY);
 
-            reaction_orig.message.reply(responseMessage);
+            reaction_orig.message.reply(escapeDiscordMessage(responseMessage));
         }
     } catch (e) {
         try {
-            reaction_orig.message.reply("Sorry, an internal error has occurred. Try again later.");
+            reaction_orig.message.reply(escapeDiscordMessage("Sorry, an internal error has occurred. Try again later."));
         } catch (x) {
             console.log('An error has occurred, and I can\'t send messages.');
         }
     }
 });
-
 // log in to discord using Discord token
 client.login(DISCORD_TOKEN); //login bot using token
