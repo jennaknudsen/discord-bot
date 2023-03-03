@@ -57,7 +57,7 @@ client.on('ready', () => {
             let aiChannels = channels.filter(channel => channel.name === AI_CHANNEL);
             aiChannels.forEach(aiChannel => {
                 client.channels.cache.get(aiChannel.id).send(
-                    escapeDiscordMessage("OpenAI bot has been restarted.")
+                    `OpenAI bot has been restarted. Completions model: \`${AI_MODEL}\``
                 ).catch(e => {
                     console.log('An error has occurred: ')
                     console.log(e)
