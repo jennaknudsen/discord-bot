@@ -111,6 +111,7 @@ client.on('messageCreate', async msg => {
         } 
     } catch (e) {
         try {
+            console.log(e)
             replyToMessage(msg, "Sorry, an internal error occurred. Try again later.")
         } catch (x) {
             console.log('An error has occurred, and I can\'t send messages.');
@@ -136,6 +137,8 @@ client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
 });
 
 async function getMessageChain(msg, messageArray) {
+    console.log(msg)
+    console.log(msg.author.bot)
     let role = null;
     let content = null;
     if (msg.author.bot) {
@@ -156,7 +159,10 @@ async function getMessageChain(msg, messageArray) {
     messageArray.splice(0, 0, itemToInsert);
 
     if (msg.type === MessageType.Reply) {
-        let parentMsg = await msg.channel.messages.fetch(msg.reference.messageID);
+        // let parentMsg = await msg.channel.messages.fetch(msg.reference.messageID);
+        let parentMsg = await msg.fetchReference();
+        console.log("PARENT MESSAGE")
+        console.log(parentMsg)
         return getMessageChain(parentMsg, messageArray);
     } else {
         return messageArray;
