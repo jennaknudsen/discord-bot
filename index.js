@@ -14,9 +14,13 @@ const CONTENT_EMOJI = process.env.CONTENT_EMOJI;
 const AI_TRAINING_DIRECTIONS = process.env.AI_TRAINING_DIRECTIONS
 
 let escapeDiscordMessage = function(input) {
-    return input.replaceAll('*', '\\*')
-        .replaceAll('_', '\\_')
-        .replaceAll('>', '\\>');
+    if (input.includes('`')) {
+        return input;
+    } else {
+        return input.replaceAll('*', '\\*')
+            .replaceAll('_', '\\_')
+            .replaceAll('>', '\\>');
+    }
 }
 
 // use this function to clean + reply to a message.
