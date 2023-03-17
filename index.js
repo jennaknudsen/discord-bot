@@ -1,7 +1,7 @@
 require('dotenv').config(); //initialize dotenv
 const db = require('./db');
 const ai = require('./ai');
-const { Events, GatewayIntentBits } = require('discord.js');
+const { Events, GatewayIntentBits, MessageType } = require('discord.js');
 const Discord = require('discord.js'); //import discord.js
 
 // Get the keys
@@ -11,6 +11,7 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const AI_COMMAND_NAME = process.env.AI_COMMAND_NAME;
 const AI_CHANNEL = process.env.AI_CHANNEL;
 const CONTENT_EMOJI = process.env.CONTENT_EMOJI;
+const AI_TRAINING_DIRECTIONS = process.env.AI_TRAINING_DIRECTIONS
 
 let escapeDiscordMessage = function(input) {
     return input.replaceAll('*', '\\*')
@@ -91,10 +92,21 @@ client.on('messageCreate', async msg => {
             if (apiCallsLeft <= 0) {
                 return;
             }
+            
+            let messageArray = await getMessageChain(msg, []);
 
+            // add training directions 
+            messageArray.splice(0, 0, {
+                role: 'system',
+                content: AI_TRAINING_DIRECTIONS
+            });
+
+            console.log("Message array:");
+            console.log(messageArray);
             // Call the openAI API and get its output
-            let prompt = message.substring(4);
-            let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
+            // let prompt = message.substring(4);
+            // let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
+            let responseMessage = await ai.callOpenApi(messageArray, AI_MODEL, OPENAI_API_KEY);
             replyToMessage(msg, responseMessage)
         } 
     } catch (e) {
@@ -122,6 +134,34 @@ client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
         replyToMessage(reaction_orig.message, "Sorry, an internal error has occurred. Try again later.");
     }
 });
+
+async function getMessageChain(msg, messageArray) {
+    let role = null;
+    let content = null;
+    if (msg.author.bot) {
+        role = 'assistant';
+        content = msg.content;
+    } else {
+        // stop recursing when ai command isn't present
+        if (!msg.content.startsWith(AI_COMMAND_NAME + ' ')) {
+            return messageArray;
+        } 
+        role = 'user';
+        content = msg.content.substring(4);
+    }
+    let itemToInsert = {
+        role: role,
+        content: content
+    };
+    messageArray.splice(0, 0, itemToInsert);
+
+    if (msg.type === MessageType.Reply) {
+        let parentMsg = await msg.channel.messages.fetch(msg.reference.messageID);
+        return getMessageChain(parentMsg, messageArray);
+    } else {
+        return messageArray;
+    }
+} 
 
 // log in to discord using Discord token
 client.login(DISCORD_TOKEN); //login bot using token

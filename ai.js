@@ -1,21 +1,20 @@
 const axios = require('axios');
 
-async function callOpenApi(prompt, model, token) {
+async function callOpenApi(messageArray, model, token) {
     let returnStr = "";
 
-    await axios.post('https://api.openai.com/v1/completions',
+    await axios.post('https://api.openai.com/v1/chat/completions',
     {
         "model": model,
-        "prompt": prompt,
-        "max_tokens": 1024
+        "messages": messageArray
     }, 
     {
         headers: {
             Authorization: "Bearer " + token
         },
-        timeout: 20000
+        timeout: 60000
     }).then(res => {
-        returnStr = res.data.choices[0].text.trim().substring(0, 2000);
+        returnStr = res.data.choices[0].message.content.trim().substring(0, 2000);
         console.log('==========')
         console.log(returnStr);
         console.log('==========')
