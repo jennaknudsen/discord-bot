@@ -66,7 +66,8 @@ client.on('ready', () => {
                     `OpenAI bot has been restarted.
                     
 ChatGPT model: \`${AI_MODEL}\`
-Completions model: \`${OLD_MODEL}\``
+Completions model: \`${OLD_MODEL}\`
+Training directions: \`${AI_TRAINING_DIRECTIONS}\``
                 ).catch(e => {
                     console.log('An error has occurred: ')
                     console.log(e)
