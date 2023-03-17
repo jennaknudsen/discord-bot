@@ -16,7 +16,6 @@ const AI_TRAINING_DIRECTIONS = process.env.AI_TRAINING_DIRECTIONS
 let escapeDiscordMessage = function(input) {
     return input.replaceAll('*', '\\*')
         .replaceAll('_', '\\_')
-        .replaceAll('`', '\\`')
         .replaceAll('>', '\\>');
 }
 
