@@ -6,9 +6,11 @@ const Discord = require('discord.js'); //import discord.js
 
 // Get the keys
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OLD_MODEL = process.env.OLD_MODEL;
 const AI_MODEL = process.env.AI_MODEL;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const AI_COMMAND_NAME = process.env.AI_COMMAND_NAME;
+const OLD_COMMAND_NAME = process.env.OLD_COMMAND_NAME;
 const AI_CHANNEL = process.env.AI_CHANNEL;
 const CONTENT_EMOJI = process.env.CONTENT_EMOJI;
 const AI_TRAINING_DIRECTIONS = process.env.AI_TRAINING_DIRECTIONS
@@ -61,7 +63,10 @@ client.on('ready', () => {
             let aiChannels = channels.filter(channel => channel.name === AI_CHANNEL);
             aiChannels.forEach(aiChannel => {
                 client.channels.cache.get(aiChannel.id).send(
-                    `OpenAI bot has been restarted. Completions model: \`${AI_MODEL}\``
+                    `OpenAI bot has been restarted.
+                    
+ChatGPT model: \`${AI_MODEL}\`
+Completions model: \`${OLD_MODEL}\``
                 ).catch(e => {
                     console.log('An error has occurred: ')
                     console.log(e)
@@ -111,7 +116,11 @@ client.on('messageCreate', async msg => {
             // let responseMessage = await ai.callOpenApi(prompt, AI_MODEL, OPENAI_API_KEY);
             let responseMessage = await ai.callOpenApi(messageArray, AI_MODEL, OPENAI_API_KEY);
             replyToMessage(msg, responseMessage)
-        } 
+        } else if (message.startsWith(OLD_COMMAND_NAME + ' ')) {
+            let prompt = message.substring(OLD_COMMAND_NAME.length + 1);
+            let responseMessage = await ai.callOpenApiCompletion(prompt, OLD_MODEL, OPENAI_API_KEY);
+            replyToMessage(msg, responseMessage);
+        }
     } catch (e) {
         try {
             console.log(e)
@@ -151,7 +160,7 @@ async function getMessageChain(msg, messageArray) {
             return messageArray;
         } 
         role = 'user';
-        content = msg.content.substring(4);
+        content = msg.content.substring(AI_COMMAND_NAME.length + 1);
     }
     let itemToInsert = {
         role: role,

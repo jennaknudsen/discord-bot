@@ -27,6 +27,34 @@ async function callOpenApi(messageArray, model, token) {
     return returnStr;
 }
 
+async function callOpenApiCompletion(prompt, model, token) {
+    let returnStr = "";
+
+    await axios.post('https://api.openai.com/v1/completions',
+    {
+        "model": model,
+        "prompt": prompt,
+        "max_tokens": 1024
+    }, 
+    {
+        headers: {
+            Authorization: "Bearer " + token
+        },
+        timeout: 60000
+    }).then(res => {
+        returnStr = res.data.choices[0].text.trim().substring(0, 2000);
+        console.log('==========')
+        console.log(returnStr);
+        console.log('==========')
+    }).catch(err => {
+        console.log("An error has occurred. Try again later")
+        console.log(err)
+        returnStr = "Sorry, an internal error has occurred. Try again later.";
+    })
+
+    return returnStr;
+}
+
 async function checkModeration(prompt, token) {
     let returnStr = "";
 
@@ -65,5 +93,6 @@ async function checkModeration(prompt, token) {
 
 module.exports = {
     callOpenApi: callOpenApi,
-    checkModeration: checkModeration
+    checkModeration: checkModeration,
+    callOpenApiCompletion: callOpenApiCompletion
 }
