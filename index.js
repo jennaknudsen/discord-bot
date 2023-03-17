@@ -137,8 +137,6 @@ client.on(Events.MessageReactionAdd, async (reaction_orig, user) => {
 });
 
 async function getMessageChain(msg, messageArray) {
-    console.log(msg)
-    console.log(msg.author.bot)
     let role = null;
     let content = null;
     if (msg.author.bot) {
@@ -161,8 +159,6 @@ async function getMessageChain(msg, messageArray) {
     if (msg.type === MessageType.Reply) {
         // let parentMsg = await msg.channel.messages.fetch(msg.reference.messageID);
         let parentMsg = await msg.fetchReference();
-        console.log("PARENT MESSAGE")
-        console.log(parentMsg)
         return getMessageChain(parentMsg, messageArray);
     } else {
         return messageArray;
