@@ -95,8 +95,6 @@ client.on('messageCreate', async msg => {
 
         let message = msg.content;
         if (message.startsWith(AI_COMMAND_NAME + ' ')) {
-            replyToMessage(msg, "Sorry, I can\'t make a response because Jenna is a beta cuck and won\'t pay for an OpenAI API subscription.");
-            return;
             // Checking to see if the user is spamming
             let apiCallsLeft = db.getApiCallsLeft(msg.author.id);
             console.log(`User has ${apiCallsLeft} API calls remaining.`)
