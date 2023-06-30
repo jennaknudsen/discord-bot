@@ -54,6 +54,7 @@ client.on('ready', () => {
     let guilds = client.guilds.cache;
     console.log("Bot is active in the following servers:")
     console.log(guilds.map(guild => guild.name));
+    /*
     guilds.forEach(guild => {
         try {
             let channels = guild.channels.cache.map(channel => ({
@@ -77,6 +78,7 @@ Training directions: \`${AI_TRAINING_DIRECTIONS}\``
             console.log('An error has occurred, and I can\'t send a wakeup message in ' + guild.name);
         };
     });
+    */
 });
 
 // respond to all messages here
